@@ -35,3 +35,11 @@ yarn-error.log*
 /.agents/
 *.pem
 *.key
+
+# local media: keep only the folder structure
+/src/assets/audio/**
+!/src/assets/audio/**/
+!/src/assets/audio/**/.gitkeep
+/src/assets/images/**
+!/src/assets/images/**/
+!/src/assets/images/**/.gitkeep

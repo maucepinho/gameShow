@@ -2,6 +2,8 @@
 
 Execute os comandos no terminal, dentro da pasta do projeto (`meu-jogo-quiz`).
 
+Os arquivos de áudio e imagem em `src/assets/audio/` e `src/assets/images/` são ignorados pelo Git; apenas a estrutura das pastas é versionada. Novos commits não salvam nem recuperam essas mídias. Mantenha um backup separado delas.
+
 ## Salvar uma versão
 
 Antes de começar uma nova alteração, confira se a versão atual está salva:
@@ -31,7 +33,7 @@ A marca **`v0.1.0`** identifica a primeira versão salva, em 27/10/2026.
 
 ## Recuperar a versão inicial
 
-Salve primeiro qualquer trabalho em andamento com um commit. Em seguida, crie uma linha de trabalho a partir da versão inicial:
+Salve primeiro qualquer trabalho em andamento com um commit e faça uma cópia de segurança das pastas de mídia fora do projeto. Versões antigas que ainda rastreiam mídias podem sobrescrever ou remover esses arquivos ao trocar de branch; arquivos ignorados não são protegidos por um commit. Em seguida, crie uma linha de trabalho a partir da versão inicial:
 
 ```bash
 git switch -c recuperar-versao-inicial v0.1.0

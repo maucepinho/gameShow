@@ -2,7 +2,7 @@
 
 Quiz de músicas com as categorias **Filmes**, **Desenhos**, **Novelas** e **Seriados**. Escolha a categoria na tela inicial e, em seguida, um número para ouvir o áudio e revelar a imagem.
 
-Os 35 filmes originais continuam disponíveis em **Filmes**, com os áudios em `src/assets/audio/filmes/` e as imagens em `src/assets/images/filmes/`. As demais categorias começam vazias e recebem perguntas automaticamente quando você adiciona as mídias.
+Os áudios e imagens de `src/assets/audio/` e `src/assets/images/` são mantidos apenas localmente e ignorados pelo Git. O repositório mantém a estrutura das pastas com arquivos `.gitkeep`. Ao clonar o projeto, adicione suas mídias separadamente; as categorias ficam vazias até receberem perguntas.
 
 ## Executar
 
@@ -34,7 +34,7 @@ src/assets/images/desenhos/nome_1.jpg
 - Áudio: `.mp3`. Imagem: `.png`, `.jpg`, `.jpeg` ou `.webp`.
 - Use o padrão `nome_NUMERO.extensao`, com um número inteiro positivo após o último `_`. Exemplo: `filme_1917_36.mp3` usa o ID **36**, não 1917.
 - Cada ID deve ser único dentro da categoria. Categorias diferentes podem ter uma pergunta **1** cada. Os números aparecem em ordem crescente, e não precisam ser consecutivos.
-- Os filmes existentes nas subpastas `filmes/` usam os IDs **1 a 35**. Para adicionar filmes, use IDs livres a partir de **36**, nas mesmas subpastas.
+- Se sua cópia local contém os 35 filmes originais, os IDs **1 a 35** já estão ocupados. Nesse caso, adicione novos filmes com IDs livres a partir de **36**, nas mesmas subpastas.
 - Coloque os arquivos diretamente na pasta da categoria, sem subpastas adicionais. Use os nomes de pasta em minúsculas exatamente como na tabela.
 - Sempre adicione o par áudio + imagem. Um áudio sem imagem ainda aparece no jogo, mas não terá uma imagem para revelar. Uma imagem sem áudio não cria uma pergunta.
 - IDs ausentes, zero, negativos, decimais ou maiores que o limite seguro de inteiros do JavaScript são ignorados. Evite duplicatas para manter o par correto.
