@@ -1,0 +1,206 @@
+/* src/components/QuestionModal.css */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 1rem;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #2c2c2c;
+  padding: 2.5rem 1.25rem 1.25rem;
+  box-sizing: border-box;
+  min-width: min(320px, 100%);
+  max-width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  border: 2px solid #444;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.card {
+  width: 250px;
+  height: 375px; /* Proporção de retrato */
+  box-sizing: border-box;
+  max-width: 100%;
+  max-height: max(80px, calc(100vh - 14rem));
+  max-height: max(80px, calc(100dvh - 14rem));
+  flex-shrink: 0;
+  background-color: #1e1e1e;
+  border: 2px solid #555;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  overflow: hidden; /* Garante que a imagem não saia dos limites */
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: scale(1.02);
+}
+
+.question-mark {
+  font-size: 150px;
+  font-weight: bold;
+  color: #555;
+}
+
+.poster-image {
+  display: block;
+  width: auto;
+  height: auto;
+  /* Reserva espaço para as bordas, os controles e o botão de fechar. */
+  max-width: 100%;
+  max-height: max(80px, calc(100vh - 14rem));
+  max-height: max(80px, calc(100dvh - 14rem));
+  object-fit: contain;
+}
+
+.card.revealed {
+  width: auto;
+  height: auto;
+  max-width: min(804px, 100%);
+  max-height: none;
+  cursor: default;
+}
+
+.card.revealed:hover {
+  transform: none;
+}
+
+.play-button {
+  margin-top: 1.5rem;
+  padding: 0.8rem 1.5rem;
+  font-size: 2rem;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  background-color: #1DB954; /* Cor inspirada no Spotify */
+  color: white;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: background-color 0.2s;
+}
+
+.play-button:hover {
+    background-color: #1ED760;
+}
+
+/* Estilos novos para o Player */
+
+.audio-controls-container {
+  width: 100%;
+  flex-shrink: 0;
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.timeline-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.seek-bar {
+  flex-grow: 1; /* Ocupa todo o espaço disponível */
+  min-width: 0;
+  cursor: pointer;
+  accent-color: #1DB954; /* Cor da barra no Chrome/Edge */
+  height: 5px;
+}
+
+.time-text {
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: #bbb;
+  min-width: 45px; /* Garante que os textos não fiquem pulando de tamanho */
+}
+
+.buttons-row {
+  display: flex;
+  gap: 15px;
+}
+
+.control-button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  
+  /* Estado padrão (Play) - Verde */
+  background-color: #1DB954; 
+  color: white;
+}
+
+.control-button:hover {
+  transform: scale(1.1);
+  background-color: #1ed760;
+}
+
+/* Estado Pausado - Amarelo ou outra cor para diferenciar */
+.control-button.paused {
+  background-color: #eab308; /* Um amarelo alaranjado */
+}
+
+.control-button.paused:hover {
+    background-color: #facc15;
+}
+
+.card.locked {
+    cursor: not-allowed;
+    opacity: 0.6;
+    border-color: #333;
+}
+
+.card.locked:hover {
+    transform: none; /* Remove o efeito de zoom se estiver bloqueado */
+}
+
+/* Ajuste o tamanho do emoji de cadeado se necessário */
+.question-mark {
+  font-size: 100px; /* Reduzi um pouco para caber o cadeado se quiser */
+  font-weight: bold;
+  color: #555;
+  user-select: none; /* Impede de selecionar o texto */
+}
