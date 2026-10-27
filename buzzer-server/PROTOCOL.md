@@ -34,8 +34,9 @@ Current implementation stores rooms in memory (lost on process restart), expires
 
 - `/` serves only lightweight participant UI; join query `?room=ABCDEF`.
 - `/health` returns health JSON.
-- `/api/rooms/:code/qr.svg` returns QR of participant join URL, with PUBLIC_URL or RENDER_EXTERNAL_URL base when configured, otherwise request host. Code is public; token is never embedded.
+- `/api/connection-info` returns `{participantBaseUrl,localUrls:[{name,url}]}`. PUBLIC_URL / RENDER_EXTERNAL_URL takes precedence. For direct loopback requests, the default is the first discovered IPv4 URL (Wi-Fi and physical adapters before virtual/VPN), using the actual listening port; with no adapters it falls back to `http://localhost:port`. Remote requests and requests carrying forwarding headers return no local URLs and use the configured URL or request origin. Never use forwarded headers to determine local privileges.
+- `/api/rooms/:code/qr.svg` returns QR of participant join URL using the same default as connection-info. Optional `?base=URL` selects a discovered local URL for loopback requests or the configured/default URL, with an exact allowlist match; paths, credentials, modified ports and arbitrary domains are rejected with `INVALID_BASE_URL`. Code is public; token is never embedded.
 - `/api/config` returns allowed avatars/colors/sound IDs and names for participant customization.
 - Socket.IO browser client available at `/socket.io/socket.io.js`.
 
-Default development port 3001; PORT and PUBLIC_URL configurable. CORS allows participant service origin plus ALLOWED_ORIGINS (default http://localhost:3000,http://127.0.0.1:3000). Accept local host frontend connecting to public HTTPS service. Deploy one instance unless shared state/adapter is implemented. Never serve the quiz build or its media from this server.
+Default development port 3001; PORT and PUBLIC_URL configurable. Listen on 0.0.0.0 for same-network phones. CORS allows participant service origin plus ALLOWED_ORIGINS (default http://localhost:3000,http://127.0.0.1:3000). Without a configured public URL, detected local IPv4 origins on port 3000 are also allowed; no wildcard is used. Accept local host frontend connecting to public HTTPS service. Deploy one instance unless shared state/adapter is implemented. Never serve the quiz build or its media from this server.

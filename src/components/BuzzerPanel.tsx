@@ -16,6 +16,29 @@ const connectionLabels = {
   disconnected: 'Desconectado',
 };
 
+function loopbackAddress(value: string): boolean {
+  try { return ['localhost', '127.0.0.1', '[::1]'].includes(new URL(value).hostname); }
+  catch { return false; }
+}
+
+function baseAddress(value: unknown): string {
+  if (typeof value !== 'string') throw new Error('Endereço inválido.');
+  const url = new URL(value);
+  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.pathname !== '/' || url.search || url.hash) {
+    throw new Error('Endereço inválido.');
+  }
+  return url.origin;
+}
+
+interface LocalConnection {
+  server: string;
+  code: string;
+  loading: boolean;
+  baseUrl: string;
+  choices: Array<{ name: string; url: string }>;
+  error: string;
+}
+
 function PlayerRow({ player, room, buzzer }: {
   player: BuzzerPlayer;
   room: BuzzerRoom;
@@ -91,6 +114,7 @@ export function BuzzerPanel({ buzzer, pauseOnBuzz, onPauseOnBuzzChange, question
   const [correctPoints, setCorrectPoints] = useState('1');
   const [incorrectPoints, setIncorrectPoints] = useState('0');
   const [copyStatus, setCopyStatus] = useState('');
+  const [localConnection, setLocalConnection] = useState<LocalConnection | null>(null);
   const [expanded, setExpanded] = useState(!buzzer.room);
   const linkRef = useRef<HTMLInputElement>(null);
   const room = buzzer.room;
@@ -109,7 +133,43 @@ export function BuzzerPanel({ buzzer, pauseOnBuzz, onPauseOnBuzzChange, question
   }, [room?.code, room?.name, room?.teamMode, room?.timerSeconds, room?.correctPoints, room?.incorrectPoints]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { setCopyStatus(''); }, [room?.code, buzzer.serverUrl]);
 
-  const joinLink = room ? `${buzzer.serverUrl.replace(/\/+$/, '')}/?room=${encodeURIComponent(room.code)}` : '';
+  useEffect(() => {
+    if (!room?.code || !loopbackAddress(buzzer.serverUrl)) {
+      setLocalConnection(null);
+      return;
+    }
+    const server = buzzer.serverUrl.replace(/\/+$/, '');
+    const code = room.code;
+    let disposed = false;
+    const abort = new AbortController();
+    const initial: LocalConnection = { server, code, loading: true, baseUrl: '', choices: [], error: '' };
+    setLocalConnection(initial);
+    const discover = async () => {
+      try {
+        const response = await fetch(`${server}/api/connection-info`, { signal: abort.signal });
+        if (!response.ok) throw new Error('Servidor sem informações de rede.');
+        const info = await response.json();
+        const baseUrl = baseAddress(info.participantBaseUrl);
+        if (!Array.isArray(info.localUrls)) throw new Error('Resposta inválida.');
+        const choices = info.localUrls.map((entry: { name?: unknown; url?: unknown }) => ({
+          name: typeof entry.name === 'string' ? entry.name : 'Rede local', url: baseAddress(entry.url),
+        }));
+        if (!choices.some((entry: { url: string }) => entry.url === baseUrl)) choices.unshift({ name: 'Endereço configurado', url: baseUrl });
+        if (!disposed) setLocalConnection({ ...initial, loading: false, baseUrl, choices });
+      } catch {
+        if (!disposed) setLocalConnection({ ...initial, loading: false, error: 'Não foi possível detectar o endereço da rede. Reinicie npm run dev e confira a conexão Wi-Fi do notebook.' });
+      }
+    };
+    void discover();
+    return () => { disposed = true; abort.abort(); };
+  }, [room?.code, buzzer.serverUrl]);
+
+  const needsLocalAddress = loopbackAddress(buzzer.serverUrl);
+  const currentLocal = localConnection?.code === room?.code && localConnection?.server === buzzer.serverUrl.replace(/\/+$/, '') ? localConnection : null;
+  const participantBase = needsLocalAddress ? currentLocal?.baseUrl || '' : buzzer.serverUrl.replace(/\/+$/, '');
+  const inviteReady = Boolean(room && participantBase && !loopbackAddress(participantBase));
+  const joinLink = room && inviteReady ? `${participantBase}/?room=${encodeURIComponent(room.code)}` : '';
+  const qrLink = room ? `${buzzer.serverUrl.replace(/\/+$/, '')}/api/rooms/${encodeURIComponent(room.code)}/qr.svg${participantBase && participantBase !== buzzer.serverUrl.replace(/\/+$/, '') ? `?base=${encodeURIComponent(participantBase)}` : ''}` : '';
   const sortedPlayers = room ? [...room.players].sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, 'pt-BR')) : [];
   const onlinePlayers = room?.players.filter((player) => player.connected).length || 0;
 
@@ -139,10 +199,11 @@ export function BuzzerPanel({ buzzer, pauseOnBuzz, onPauseOnBuzzChange, question
               event.preventDefault();
               void buzzer.createRoom(serverUrl.trim(), name.trim(), hostName.trim());
             }}>
-              <p className="bzr-help">Cada jogador usa o próprio celular. Ao abrir um número do tabuleiro, os botões são liberados automaticamente.</p>
+              <p className="bzr-help">Conecte os celulares e o notebook à mesma rede Wi-Fi. O notebook será o servidor da partida. Ao abrir um número do tabuleiro, os botões são liberados automaticamente.</p>
               <label>Endereço do servidor do buzzer
-                <input type="url" value={serverUrl} onChange={(event) => setServerUrl(event.target.value)} placeholder="https://seu-buzzer.onrender.com" required disabled={buzzer.busy} autoComplete="url" />
+                <input type="url" value={serverUrl} onChange={(event) => setServerUrl(event.target.value)} placeholder="http://localhost:3001" required disabled={buzzer.busy} autoComplete="url" />
               </label>
+              <button type="button" disabled={buzzer.busy} onClick={() => setServerUrl('http://localhost:3001')}>Usar servidor deste notebook</button>
               <div className="bzr-form-grid">
                 <label>Nome da partida<input value={name} onChange={(event) => setName(event.target.value)} maxLength={80} required disabled={buzzer.busy} /></label>
                 <label>Apresentador<input value={hostName} onChange={(event) => setHostName(event.target.value)} maxLength={40} required disabled={buzzer.busy} autoComplete="nickname" /></label>
@@ -161,12 +222,23 @@ export function BuzzerPanel({ buzzer, pauseOnBuzz, onPauseOnBuzzChange, question
                 <summary>Convidar jogadores · link e QR code</summary>
                 <div className="bzr-invite">
                   <div className="bzr-invite-link">
+                    {needsLocalAddress && currentLocal && currentLocal.choices.length > 1 && <label>Endereço para os celulares
+                      <select value={participantBase} onChange={(event) => {
+                        const baseUrl = event.target.value;
+                        setLocalConnection((previous) => previous ? { ...previous, baseUrl } : previous);
+                        setCopyStatus('');
+                      }}>
+                        {currentLocal.choices.map((entry) => <option key={entry.url} value={entry.url}>{entry.name} · {entry.url}</option>)}
+                      </select>
+                    </label>}
                     <label>Link para entrar<input ref={linkRef} value={joinLink} readOnly onFocus={(event) => event.target.select()} /></label>
-                    <div className="bzr-actions"><button type="button" onClick={() => { void copyLink(); }}>Copiar link</button><a href={joinLink} target="_blank" rel="noreferrer">Abrir tela do jogador ↗</a></div>
-                    <p className="bzr-help">Os jogadores também podem abrir o endereço do servidor e digitar o código da sala.</p>
+                    <div className="bzr-actions"><button type="button" disabled={!inviteReady} onClick={() => { void copyLink(); }}>Copiar link</button>{inviteReady && <a href={joinLink} target="_blank" rel="noreferrer">Abrir tela do jogador ↗</a>}</div>
+                    {needsLocalAddress && !currentLocal?.error && !inviteReady && <p className="bzr-notice" role="status">{!currentLocal || currentLocal.loading ? 'Preparando o link da rede local…' : 'Nenhuma conexão de rede foi encontrada. Conecte o notebook ao Wi-Fi e crie uma nova sala.'}</p>}
+                    {needsLocalAddress && currentLocal?.error && <p className="bzr-notice" role="status">{currentLocal.error}</p>}
+                    <p className="bzr-help">No modo local, os celulares precisam estar no mesmo Wi-Fi do notebook. Compartilhe este link ou QR; localhost funciona somente no próprio notebook.</p>
                     <p className="bzr-copy-status" role="status">{copyStatus}</p>
                   </div>
-                  <img className="bzr-qr" src={`${buzzer.serverUrl.replace(/\/+$/, '')}/api/rooms/${encodeURIComponent(room.code)}/qr.svg`} width="160" height="160" alt={`QR code para entrar na sala ${room.code}`} loading="lazy" />
+                  {inviteReady && <img className="bzr-qr" src={qrLink} width="160" height="160" alt={`QR code para entrar na sala ${room.code}`} loading="lazy" />}
                 </div>
               </details>
 

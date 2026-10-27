@@ -1,6 +1,6 @@
 # Buzzer integrado
 
-O apresentador continua usando o GameShow no computador, com seus áudios e imagens locais. Os jogadores acessam uma página leve no celular, por link, código de seis caracteres ou QR code. Essa página se conecta ao mesmo servidor do apresentador, inclusive quando cada pessoa está em uma rede diferente.
+O modo padrão agora é pela **mesma rede Wi-Fi do notebook**, sem hospedagem. O notebook executa o jogo e o servidor do buzzer; os jogadores acessam uma página leve no celular por link, código de seis caracteres ou QR code. Os áudios e imagens continuam locais.
 
 ## Iniciar no computador
 
@@ -16,11 +16,21 @@ Para iniciar o jogo e o servidor local juntos:
 npm run dev
 ```
 
-Abra o jogo em `http://localhost:3000`. A seção **Buzzer dos jogadores** permite criar a sala. Para testar somente neste computador, use o servidor `http://localhost:3001`. Um endereço `localhost` no celular apontaria para o próprio celular; para participação pela internet, publique o serviço conforme a próxima seção.
+## Jogar pelo Wi-Fi do notebook
+
+1. Conecte o notebook e todos os celulares à mesma rede Wi-Fi.
+2. Inicie tudo com `npm run dev` e abra o jogo em `http://localhost:3000` no notebook.
+3. Em **Buzzer dos jogadores**, use **Usar servidor deste notebook** e crie a sala. O endereço do servidor no notebook pode ficar como `http://localhost:3001`.
+4. Abra **Convidar jogadores · link e QR code**. O jogo detecta o endereço de rede do notebook e usa esse endereço no link e no QR. **Não envie localhost aos celulares.**
+5. Nos celulares, leia o QR ou abra o link e escolha um nome. Também é possível abrir o endereço mostrado no terminal em **Celulares na mesma rede (Wi-Fi)** e digitar o código da sala.
+
+Se houver várias conexões, escolha **Wi-Fi** em **Endereço para os celulares**. A troca atualiza o link e o QR juntos. O IP é detectado a cada criação de sala, sem ficar gravado no código; ele pode mudar ao trocar de rede.
+
+Mantenha o notebook ligado, sem suspensão, e o terminal aberto durante a partida. O roteador precisa permitir comunicação entre os aparelhos: redes de convidados ou com isolamento entre clientes podem impedir o acesso. Se o celular não abrir o link, confira se ambos estão no mesmo Wi-Fi e se o firewall permite o Node.js na rede privada. Não é necessário abrir portas do roteador nem contratar hospedagem para este modo.
 
 Também é possível iniciar somente o jogo com `npm start`, ou somente o servidor local com `npm run start:buzzer`. Se você usar o servidor publicado, não precisa manter outro servidor local aberto: basta `npm start` para o jogo.
 
-## Publicar o servidor para jogar pela internet
+## Opcional: publicar o servidor para jogar pela internet
 
 [Publicar o buzzer no Render](https://render.com/deploy?repo=https://github.com/maucepinho/gameShow)
 

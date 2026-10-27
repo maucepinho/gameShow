@@ -7,6 +7,7 @@ const { performance } = require('node:perf_hooks');
 const express = require('express');
 const QRCode = require('qrcode');
 const { Server } = require('socket.io');
+const { connectionInfo, localUrls } = require('./network');
 
 const AVATARS = Object.freeze(['🎵', '🎸', '🥁', '🎤', '🎹', '🎷', '🎺', '🦊', '🐼', '🐸', '🦁', '🐱', '🚀', '⭐', '⚡', '👑']);
 const COLORS = Object.freeze(['#ff6b6b', '#ffd166', '#06d6a0', '#4cc9f0', '#a78bfa', '#f472b6', '#fb923c', '#e2e8f0']);
@@ -100,6 +101,24 @@ function createBuzzerServer(options = {}) {
   }
   if (baseUrl) origins.add(baseUrl);
 
+  function networkInterfaces() {
+    return typeof options.networkInterfaces === 'function' ? options.networkInterfaces() : options.networkInterfaces;
+  }
+  function serverPort() {
+    return httpServer.address()?.port || 3001;
+  }
+  function requestConnectionInfo(request) {
+    return connectionInfo({
+      port: serverPort(), interfaces: networkInterfaces(), publicUrl: baseUrl,
+      requestOrigin: originValue(`${request.secure ? 'https' : 'http'}://${request.get('host')}`),
+      remoteAddress: request.socket.remoteAddress,
+      forwarded: Boolean(request.headers.forwarded || request.headers['x-forwarded-for'] || request.headers['x-forwarded-host']),
+    });
+  }
+  function allowedPresenterOrigin(origin) {
+    return origins.has(origin) || (!baseUrl && localUrls(3000, networkInterfaces()).some(({ url }) => url === origin));
+  }
+
   const limits = {
     rooms: options.maxRooms ?? 200,
     players: options.maxPlayers ?? 100,
@@ -113,7 +132,7 @@ function createBuzzerServer(options = {}) {
 
   function allowedOrigin(origin, request) {
     if (!origin) return true; // Native clients/health checks have no browser Origin.
-    if (origins.has(origin)) return true;
+    if (allowedPresenterOrigin(origin)) return true;
     const ownHost = request.headers.host;
     return origin === `http://${ownHost}` || origin === `https://${ownHost}`;
   }
@@ -121,7 +140,7 @@ function createBuzzerServer(options = {}) {
   const io = new Server(httpServer, {
     maxHttpBufferSize: 16 * 1024,
     cors: {
-      origin: (origin, callback) => callback(null, !origin || origins.has(origin) || undefined),
+      origin: (origin, callback) => callback(null, !origin || allowedPresenterOrigin(origin) || undefined),
       methods: ['GET', 'POST'],
     },
     allowRequest: (request, callback) => callback(null, allowedOrigin(request.headers.origin, request)),
@@ -623,14 +642,27 @@ function createBuzzerServer(options = {}) {
   });
   app.get('/health', (_request, response) => response.json({ ok: true, service: 'gameshow-buzzer', rooms: rooms.size }));
   app.get('/api/config', (_request, response) => response.json({ avatars: AVATARS, colors: COLORS, sounds: SOUNDS }));
+  app.get('/api/connection-info', (request, response) => {
+    const info = requestConnectionInfo(request);
+    response.setHeader('Cache-Control', 'no-store');
+    if (!info.participantBaseUrl) return response.status(400).json({ ok: false, error: 'Endereço do servidor inválido.' });
+    return response.json(info);
+  });
   app.get('/api/rooms/:code/qr.svg', async (request, response) => {
     try {
       const code = roomCode(request.params.code);
       if (!rooms.has(code)) return response.status(404).json({ ok: false, error: 'Sala não encontrada.', code: 'ROOM_NOT_FOUND' });
-      const requestBase = `${request.secure ? 'https' : 'http'}://${request.get('host')}`;
       // Hosted deployments must configure PUBLIC_URL / RENDER_EXTERNAL_URL so
       // links do not depend on untrusted Host or reverse-proxy headers.
-      const origin = baseUrl || originValue(requestBase);
+      const info = requestConnectionInfo(request);
+      let origin = info.participantBaseUrl;
+      if (request.query.base !== undefined) {
+        const selected = request.query.base;
+        if (typeof selected !== 'string' || ![...info.localUrls.map(({ url }) => url), baseUrl, origin].includes(selected)) {
+          return response.status(400).json({ ok: false, error: 'Endereço de conexão inválido.', code: 'INVALID_BASE_URL' });
+        }
+        origin = selected;
+      }
       if (!origin) return response.status(400).json({ ok: false, error: 'Endereço do servidor inválido.' });
       const url = `${origin}/?room=${encodeURIComponent(code)}`;
       const svg = await QRCode.toString(url, { type: 'svg', errorCorrectionLevel: 'M', margin: 2, width: 260 });

@@ -8,7 +8,7 @@ Os áudios e imagens de `src/assets/audio/` e `src/assets/images/` são mantidos
 
 O buzzer integrado oferece celulares por link/código/QR, ordem de chegada, equipes, placar, sons e personalização. Abrir cada número inicia uma rodada automaticamente. O apresentador pode pausar a música no primeiro toque, julgar respostas e rearmar sem trocar de site.
 
-Consulte [BUZZER.md](BUZZER.md) para iniciar tudo com `npm run dev` e publicar o serviço para jogadores de outras redes. O servidor publica somente a página dos participantes; suas mídias continuam locais.
+Use `npm run dev` para jogar com os celulares na **mesma rede Wi-Fi do notebook**, sem hospedagem. O link e o QR usam o endereço da rede detectado automaticamente. Consulte [BUZZER.md](BUZZER.md) para as instruções; a publicação para outras redes continua opcional. O servidor publica somente a página dos participantes; suas mídias continuam locais.
 
 ## Executar
 

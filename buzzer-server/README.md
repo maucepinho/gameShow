@@ -1,6 +1,6 @@
 # Servidor de buzzer do GameShow
 
-Serviço Node.js independente. O apresentador pode continuar com o jogo no computador e conectar-se à URL HTTPS deste serviço; participantes entram por código ou QR de qualquer rede. Este servidor publica somente a interface leve de participantes em `public/`, sem os áudios e imagens do jogo.
+Serviço Node.js independente. No uso local, o notebook executa o jogo e este servidor, e os celulares entram pelo Wi-Fi usando link ou QR. Não é necessário contratar hospedagem. Este servidor publica somente a interface leve de participantes em `public/`, sem os áudios e imagens do jogo. Também é possível publicar o serviço para participantes de outras redes.
 
 Requer Node.js 22 ou superior. Dentro desta pasta:
 
@@ -9,7 +9,13 @@ npm ci
 npm start
 ```
 
-O serviço local fica em `http://localhost:3001`. `npm test` executa testes com conexões reais de Socket.IO e HTTP.
+O serviço local fica em `http://localhost:3001` e escuta em todas as interfaces de rede. Ao iniciar, o terminal mostra os endereços para os celulares, como `http://192.168.0.20:3001`. O jogo do apresentador continua em `http://localhost:3000`. Na raiz do projeto, `npm run dev` inicia os dois serviços.
+
+Conecte os celulares à mesma rede do notebook. Ao criar a sala pelo jogo no notebook, o link e o QR usam automaticamente o IPv4 local, priorizando Wi-Fi e adaptadores físicos. Se houver mais de uma rede, selecione o endereço correto no painel do buzzer. `localhost` identifica o próprio aparelho, por isso não funciona como endereço do notebook nos celulares.
+
+Se a conexão falhar, verifique se o Windows permite o Node.js na rede privada e se o roteador não isola os dispositivos (situação comum em redes de convidados). O programa não altera o firewall. O notebook e o servidor precisam permanecer ligados durante a partida.
+
+`npm test` executa testes com conexões reais de Socket.IO e HTTP, além da descoberta dos adaptadores.
 
 ## Configuração
 
@@ -18,11 +24,13 @@ Para testar localmente, copie `.env.example` para `.env`, que é ignorado pelo G
 | Variável | Uso |
 | --- | --- |
 | `PORT` | Porta do serviço; padrão `3001`. A hospedagem normalmente fornece esta variável. |
-| `PUBLIC_URL` | URL pública HTTPS do buzzer, por exemplo `https://seu-buzzer.onrender.com`. Usada para os links dos QR codes. |
+| `PUBLIC_URL` | URL pública HTTPS do buzzer, por exemplo `https://seu-buzzer.onrender.com`. Tem prioridade nos links e QR codes. Deixe sem configurar para descobrir o endereço local automaticamente. |
 | `RENDER_EXTERNAL_URL` | Alternativa automática a `PUBLIC_URL` no Render. |
 | `ALLOWED_ORIGINS` | Origens adicionais do apresentador, separadas por vírgula. Por exemplo `https://meu-jogo.exemplo.com`. |
 
-`http://localhost:3000` e `http://127.0.0.1:3000` são sempre permitidos para conectar o jogo local ao serviço público. A interface de participantes usa a origem do próprio serviço. Para acesso de outra máquina na rede local, acrescente a origem exata do jogo (com protocolo e porta) em `ALLOWED_ORIGINS`. Um QR gerado em `localhost` não será acessível pelo celular; para jogar pela internet, use o serviço publicado e HTTPS.
+`http://localhost:3000` e `http://127.0.0.1:3000` são sempre permitidos para conectar o jogo ao serviço. Sem `PUBLIC_URL`/`RENDER_EXTERNAL_URL`, os IPv4 locais detectados também são permitidos na porta `3000`, sem liberar origens arbitrárias. A interface de participantes usa a origem do próprio serviço. Para outras origens do apresentador, configure o endereço exato (com protocolo e porta) em `ALLOWED_ORIGINS`. Para jogar pela internet, use o serviço publicado e HTTPS.
+
+`GET /api/connection-info` retorna o endereço recomendado para participantes e, apenas em solicitações diretas do próprio notebook por loopback, os endereços de suas interfaces. Solicitações remotas ou recebidas com cabeçalhos de proxy não recebem a lista de adaptadores. Se nenhum IPv4 for encontrado, o endereço temporário será `http://localhost:3001`, que só funciona no notebook; conecte a rede antes de compartilhar o QR.
 
 ## Publicação
 
