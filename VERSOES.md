@@ -31,6 +31,8 @@ git tag
 
 A marca **`v0.1.0`** identifica a primeira versão salva, em 27/10/2026.
 
+A marca **`pre-buzzer`** preserva a versão estável imediatamente anterior ao buzzer integrado. A versão **`v0.2.0`** adiciona o buzzer multiplayer. Para desfazer essa alteração grande, você pode pedir para recuperar `pre-buzzer`; suas mídias locais continuam fora do Git.
+
 O histórico publicado foi limpo para excluir as mídias de todas as versões, mantendo o código e a tag `v0.1.0`. Essa limpeza alterou os identificadores dos commits. Se você possui uma cópia anterior à limpeza em outro computador, faça um novo clone e copie suas mídias locais separadamente antes de continuar o trabalho.
 
 ## Recuperar a versão inicial

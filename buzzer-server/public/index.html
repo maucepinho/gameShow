@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#121212" />
+    <meta name="description" content="Entre na sala do GameShow e toque no buzzer pelo seu celular." />
+    <title>GameShow · Buzzer</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/socket.io/socket.io.js" defer></script>
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="GameShow Buzzer, início"><span class="brand-icon" aria-hidden="true">G<span>•</span></span><span>GameShow<small>BUZZER</small></span></a>
+        <span id="connection" class="connection" role="status"><i aria-hidden="true"></i><span>Conectando</span></span>
+      </header>
+
+      <main>
+        <section id="join-view" class="join-view" aria-labelledby="join-title">
+          <div class="intro"><span class="eyebrow">SEU CELULAR É O CONTROLE</span><h1 id="join-title">Sabe a resposta?<br /><span>Aperte primeiro.</span></h1><p>Entre na sala do apresentador e prepare o dedo. A próxima pergunta pode ser sua.</p></div>
+          <form id="join-form" class="card join-card">
+            <div class="section-heading"><span class="step-dot">01</span><h2>Entre no jogo</h2></div>
+            <label for="room-code">Código da sala</label>
+            <input id="room-code" name="room" class="code-input" placeholder="ABCDEF" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="6" pattern="[A-Za-z0-9]{6}" required aria-describedby="room-help" />
+            <small id="room-help" class="field-help">O código aparece na tela do apresentador.</small>
+            <label for="join-name">Como você quer aparecer?</label>
+            <input id="join-name" name="name" placeholder="Seu nome ou apelido" autocomplete="nickname" maxlength="24" required />
+            <button id="join-submit" class="primary-button" type="submit" disabled>Entrar na sala <span aria-hidden="true">→</span></button>
+            <p class="join-note">Use o mesmo navegador para voltar à sua participação.</p>
+          </form>
+          <div class="how-it-works"><span aria-hidden="true">①</span> Entre <span class="how-arrow" aria-hidden="true">→</span><span aria-hidden="true">②</span> Espere a pergunta <span class="how-arrow" aria-hidden="true">→</span><span aria-hidden="true">③</span> Aperte!</div>
+        </section>
+
+        <section id="game-view" class="game-view" hidden aria-label="Sua participação">
+          <div class="room-bar"><div><span class="eyebrow">SALA <strong id="game-code"></strong></span><h1 id="room-name">GameShow</h1></div><button id="switch-room" class="text-button" type="button">Trocar de sala</button></div>
+          <div class="player-strip card"><span id="my-avatar" class="my-avatar" aria-hidden="true">🙂</span><div class="player-identity"><strong id="my-name"></strong><span id="my-team">Jogador individual</span></div><div class="my-score"><strong id="my-score">0</strong><span>pontos</span></div></div>
+
+          <div class="play-card card">
+            <div class="round-heading"><span id="round-label" class="question-label">Aguardando pergunta</span><span id="timer" class="timer" hidden aria-label="Tempo aproximado restante"></span></div>
+            <div id="round-status" class="round-status" role="status" aria-live="polite"><span id="status-eyebrow" class="eyebrow">PRONTO PARA JOGAR</span><h2 id="status-title">Aguarde o apresentador</h2><p id="status-detail">O botão será liberado quando a pergunta começar.</p></div>
+            <div class="buzzer-well"><button id="buzzer" class="buzzer" type="button" disabled aria-describedby="status-detail"><span id="buzzer-label">AGUARDE</span><small id="buzzer-help">A próxima pergunta vem aí</small></button></div>
+            <div class="buzzer-footer"><span id="round-hint">Um toque por rodada · ordem registrada pelo servidor</span><button id="audio-toggle" class="audio-toggle" type="button" aria-pressed="false">Ativar som</button></div>
+          </div>
+
+          <div class="room-columns">
+            <section class="card list-card" aria-labelledby="queue-title"><div class="section-heading"><h2 id="queue-title">Ordem de chegada</h2><span id="queue-count" class="count-badge">0</span></div><p id="queue-empty" class="empty-state">Quem apertar aparece aqui.</p><ol id="queue-list" class="queue-list"></ol></section>
+            <section class="card list-card" aria-labelledby="scores-title"><div class="section-heading"><h2 id="scores-title">Placar</h2><span id="player-count" class="subtle-label"></span></div><div id="team-scores-wrap" hidden><h3 class="list-subheading">Equipes</h3><ol id="team-scores" class="score-list team-score-list"></ol><h3 class="list-subheading">Jogadores</h3></div><ol id="player-scores" class="score-list"></ol></section>
+          </div>
+
+          <details class="card profile-card" id="profile-panel"><summary><span>Seu estilo de jogo</span><span class="subtle-label">Nome, equipe e som <span aria-hidden="true">⌄</span></span></summary><form id="profile-form"><div class="profile-grid"><div class="form-field wide-field"><label for="profile-name">Nome ou apelido</label><input id="profile-name" name="name" maxlength="24" required autocomplete="nickname" /></div><div class="form-field"><label for="profile-avatar">Avatar</label><select id="profile-avatar" name="avatar"></select></div><div class="form-field"><label for="profile-color">Sua cor</label><select id="profile-color" name="color"></select></div><div id="team-field" class="form-field wide-field" hidden><label for="profile-team">Equipe</label><select id="profile-team" name="teamId"><option value="">Sem equipe</option></select></div><div class="form-field wide-field"><label for="profile-sound">Som do seu buzzer</label><div class="sound-control"><select id="profile-sound" name="sound"></select><button id="preview-sound" class="secondary-button" type="button" aria-label="Ouvir o som selecionado">Ouvir</button></div></div></div><div class="profile-actions"><p class="field-help">A personalização acompanha você ao reconectar.</p><button id="profile-save" class="primary-button" type="submit" disabled>Salvar alterações</button></div></form></details>
+        </section>
+        <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+        <noscript><p class="notice">Ative o JavaScript no navegador para entrar na sala.</p></noscript>
+      </main>
+      <footer class="app-footer">GameShow <span aria-hidden="true">·</span> Responda, dispute, divirta-se.</footer>
+    </div>
+  </body>
+</html>

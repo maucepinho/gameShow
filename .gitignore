@@ -2,6 +2,8 @@
 
 # dependencies
 /node_modules
+/buzzer-server/node_modules/
+/buzzer-server/.data/
 /.pnp
 .pnp.js
 

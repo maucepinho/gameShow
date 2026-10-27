@@ -4,6 +4,12 @@ Quiz de músicas com as categorias **Filmes**, **Desenhos**, **Novelas** e **Ser
 
 Os áudios e imagens de `src/assets/audio/` e `src/assets/images/` são mantidos apenas localmente e ignorados pelo Git. O repositório mantém a estrutura das pastas com arquivos `.gitkeep`. Ao clonar o projeto, adicione suas mídias separadamente; as categorias ficam vazias até receberem perguntas.
 
+## Buzzer dos jogadores
+
+O buzzer integrado oferece celulares por link/código/QR, ordem de chegada, equipes, placar, sons e personalização. Abrir cada número inicia uma rodada automaticamente. O apresentador pode pausar a música no primeiro toque, julgar respostas e rearmar sem trocar de site.
+
+Consulte [BUZZER.md](BUZZER.md) para iniciar tudo com `npm run dev` e publicar o serviço para jogadores de outras redes. O servidor publica somente a página dos participantes; suas mídias continuam locais.
+
 ## Executar
 
 ```bash

@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: gameshow-buzzer
+    runtime: node
+    plan: free
+    rootDir: buzzer-server
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeployTrigger: "off"
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: ALLOWED_ORIGINS
+        value: http://localhost:3000,http://127.0.0.1:3000

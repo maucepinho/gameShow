@@ -1,23 +1,56 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
 import { categories } from './data/categories';
 import { questionsByCategory } from './data/questions';
 import { CategoryId } from './types/Category';
 import { Question } from './types/Question';
 import { QuestionModal } from './components/QuestionModal';
+import { BuzzerPanel } from './components/BuzzerPanel';
+import { BuzzerRound } from './components/BuzzerRound';
+import { useBuzzer } from './buzzer/useBuzzer';
+import { enableBuzzerAudio, playBuzzerSound } from './buzzer/sounds';
 
 function App() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<CategoryId | null>(null);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [openedQuestionIds, setOpenedQuestionIds] = useState<Partial<Record<CategoryId, number[]>>>({});
+  const [pauseOnBuzz, setPauseOnBuzz] = useState(() => {
+    try { return localStorage.getItem('gameshow:buzzer:pause-audio') !== 'false'; }
+    catch { return true; }
+  });
+  const buzzer = useBuzzer();
+  const { syncQuestion, generation, connection } = buzzer;
+  const roomCode = buzzer.room?.code;
+  const soundedBuzz = useRef('');
 
   const selectedCategory = categories.find((category) => category.id === selectedCategoryId);
   const questions = selectedCategoryId ? questionsByCategory[selectedCategoryId] : [];
   const openedIds = selectedCategoryId ? openedQuestionIds[selectedCategoryId] ?? [] : [];
+  const questionKey = selectedCategoryId && selectedQuestion ? `${selectedCategoryId}:${selectedQuestion.id}` : '';
+  const questionLabel = selectedCategory && selectedQuestion ? `${selectedCategory.name} · Pergunta ${selectedQuestion.id}` : '';
+
+  useEffect(() => {
+    void syncQuestion(questionKey ? { key: questionKey, label: questionLabel } : null);
+  }, [roomCode, connection, generation, questionKey, questionLabel, syncQuestion]);
+
+  const firstPress = buzzer.room?.round.queue[0];
+  const firstPressKey = firstPress ? `${buzzer.room?.round.id}:${firstPress.playerId}` : '';
+  useEffect(() => {
+    if (!firstPressKey || firstPressKey === soundedBuzz.current || !buzzer.room) return;
+    soundedBuzz.current = firstPressKey;
+    const player = buzzer.room.players.find((entry) => entry.id === firstPress?.playerId);
+    if (player) playBuzzerSound(player.sound);
+  }, [firstPressKey, firstPress?.playerId, buzzer.room]);
+
+  const handlePauseOnBuzz = (value: boolean) => {
+    setPauseOnBuzz(value);
+    try { localStorage.setItem('gameshow:buzzer:pause-audio', String(value)); } catch { /* Optional preference. */ }
+  };
 
   const handleOpenModal = (question: Question) => {
     if (!selectedCategoryId) return;
 
+    enableBuzzerAudio();
     setSelectedQuestion(question);
     setOpenedQuestionIds((previous) => {
       const categoryIds = previous[selectedCategoryId] ?? [];
@@ -42,6 +75,7 @@ function App() {
 
   return (
     <div className="App">
+      <BuzzerPanel buzzer={buzzer} pauseOnBuzz={pauseOnBuzz} onPauseOnBuzzChange={handlePauseOnBuzz} questionOpen={Boolean(selectedQuestion)} />
       {selectedCategory ? (
         <>
           <nav className="game-actions" aria-label="Controles do jogo">
@@ -123,8 +157,11 @@ function App() {
 
       {selectedQuestion && (
         <QuestionModal
+          key={questionKey}
           question={selectedQuestion}
           onClose={() => setSelectedQuestion(null)}
+          buzzerContent={buzzer.room ? <BuzzerRound buzzer={buzzer} /> : undefined}
+          pauseSignal={pauseOnBuzz && buzzer.room?.round.questionKey === questionKey ? firstPressKey : undefined}
         />
       )}
     </div>

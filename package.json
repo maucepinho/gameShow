@@ -1,6 +1,6 @@
 {
   "name": "meu-jogo-quiz",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
@@ -14,13 +14,18 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-scripts": "5.0.1",
+    "socket.io-client": "^4.8.4",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
+    "setup": "npm ci && npm --prefix buzzer-server ci",
+    "dev": "node scripts/dev.cjs",
+    "start:buzzer": "npm --prefix buzzer-server start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "test:buzzer": "npm --prefix buzzer-server test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

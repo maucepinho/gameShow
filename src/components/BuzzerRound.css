@@ -1,0 +1,55 @@
+.buzzer-round {
+  width: 310px;
+  max-width: 100%;
+  box-sizing: border-box;
+  flex: 0 0 310px;
+  align-self: stretch;
+  padding: 1rem;
+  background: #171e19;
+  border: 1px solid #47614e;
+  border-radius: 10px;
+  text-align: left;
+  color: #f0f4f1;
+}
+
+.buzzer-round-heading { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; }
+.buzzer-round h2 { margin: 0; font-size: 1.1rem; }
+.buzzer-round-code { font: 700 0.85rem monospace; color: #86dfa2; letter-spacing: 0.1em; }
+.buzzer-round-status { margin-top: 0.9rem; padding: 0.45rem 0.7rem; border: 1px solid #6d6956; border-radius: 5px; background: #302f25; color: #e5d8a9; font-size: 0.8rem; font-weight: 700; }
+.buzzer-round-status-open { background: #193c25; color: #95f0b1; border-color: #3e8453; }
+.buzzer-round-label { margin: 0.6rem 0; color: #bdcbc1; font-size: 0.8rem; line-height: 1.4; overflow-wrap: anywhere; }
+.buzzer-round-timer { color: #93efb2; font-size: 1.9rem; font-weight: 700; font-variant-numeric: tabular-nums; margin: 0.5rem 0; }
+.buzzer-round-timer > span { color: #b3c0b7; font-size: 0.75rem; font-weight: normal; }
+.buzzer-round-timer-ending { color: #f5c16c; }
+.buzzer-round-active { min-height: 82px; display: flex; flex-direction: column; justify-content: center; gap: 0.45rem; background: #253b2c; border-radius: 7px; padding: 0.8rem; margin-top: 0.9rem; overflow-wrap: anywhere; }
+.buzzer-round-active > span, .buzzer-round-active > small { font-size: 0.75rem; color: #bdd8c5; }
+.buzzer-round-active > strong { font-size: 1.15rem; }
+.buzzer-round button { min-height: 42px; font: inherit; font-size: 0.8rem; font-weight: 600; color: #fff; border: 1px solid #62796a; background: #2d4435; border-radius: 6px; padding: 0.6rem; cursor: pointer; }
+.buzzer-round button:hover:not(:disabled) { filter: brightness(1.2); }
+.buzzer-round button:disabled { opacity: 0.45; cursor: not-allowed; }
+.buzzer-round button:focus-visible { outline: 3px solid #1ed760; outline-offset: 3px; }
+.buzzer-round-judge { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.75rem; }
+.buzzer-round-judge button > span { display: block; font-size: 0.7rem; font-weight: normal; margin-top: 0.2rem; }
+.buzzer-round .buzzer-round-correct { background: #176b36; border-color: #4eab6e; }
+.buzzer-round .buzzer-round-incorrect { background: #6b3430; border-color: #b47068; }
+.buzzer-round-queue-heading { margin: 1.2rem 0 0.6rem; font-size: 0.85rem; }
+.buzzer-round-queue-heading > span { font-weight: normal; color: #adbcaf; }
+.buzzer-round-queue { list-style: none; padding: 0; margin: 0; max-height: 250px; overflow-y: auto; }
+.buzzer-round-queue li { display: flex; gap: 0.6rem; align-items: center; padding: 0.6rem 0.4rem; border-bottom: 1px solid #35473a; border-left: 3px solid transparent; }
+.buzzer-round-queue li.buzzer-round-queue-active { background: #284431; border-left-color: #5bd484; }
+.buzzer-round-rank { color: #d6e3db; font-size: 0.8rem; width: 22px; flex-shrink: 0; }
+.buzzer-round-player { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; }
+.buzzer-round-player > strong { font-size: 0.82rem; overflow-wrap: anywhere; }
+.buzzer-round-player > small { font-size: 0.68rem; color: #b2c4b7; }
+.buzzer-round-outcome-correct .buzzer-round-player > small { color: #8eefac; }
+.buzzer-round-outcome-incorrect .buzzer-round-player > small { color: #f5b3a7; }
+.buzzer-round-elapsed { font-variant-numeric: tabular-nums; font-size: 0.7rem; color: #b2c4b7; white-space: nowrap; }
+.buzzer-round-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 1rem; }
+.buzzer-round-note, .buzzer-round-empty { color: #adbeb2; font-size: 0.72rem; line-height: 1.5; margin: 0.75rem 0 0; }
+.buzzer-round-empty { padding: 0.5rem 0; }
+.buzzer-round-error { padding: 0.65rem; border: 1px solid #945c54; border-radius: 6px; color: #f3b9af; font-size: 0.8rem; overflow-wrap: anywhere; }
+
+@media (max-width: 760px) {
+  .buzzer-round { width: 100%; flex-basis: auto; }
+  .buzzer-round-queue { max-height: 180px; }
+}

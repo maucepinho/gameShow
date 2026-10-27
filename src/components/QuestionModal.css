@@ -197,6 +197,18 @@
     transform: none; /* Remove o efeito de zoom se estiver bloqueado */
 }
 
+.question-layout { display: flex; justify-content: center; gap: 1.5rem; width: 100%; min-width: 0; }
+.question-media { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.modal-content.with-buzzer { width: min(1100px, 100%); }
+.with-buzzer .question-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 340px); align-items: start; }
+.question-buzzer { min-width: 0; width: 100%; }
+.audio-error { color: #ffbcad; max-width: 360px; line-height: 1.5; font-size: 0.9rem; }
+
+@media (max-width: 760px) {
+  .with-buzzer .question-layout { grid-template-columns: minmax(0, 1fr); }
+  .modal-content.with-buzzer { width: min(520px, 100%); }
+}
+
 /* Ajuste o tamanho do emoji de cadeado se necessário */
 .question-mark {
   font-size: 100px; /* Reduzi um pouco para caber o cadeado se quiser */
