@@ -31,9 +31,11 @@ git tag
 
 A marca **`v0.1.0`** identifica a primeira versão salva, em 27/10/2026.
 
+O histórico publicado foi limpo para excluir as mídias de todas as versões, mantendo o código e a tag `v0.1.0`. Essa limpeza alterou os identificadores dos commits. Se você possui uma cópia anterior à limpeza em outro computador, faça um novo clone e copie suas mídias locais separadamente antes de continuar o trabalho.
+
 ## Recuperar a versão inicial
 
-Salve primeiro qualquer trabalho em andamento com um commit e faça uma cópia de segurança das pastas de mídia fora do projeto. Versões antigas que ainda rastreiam mídias podem sobrescrever ou remover esses arquivos ao trocar de branch; arquivos ignorados não são protegidos por um commit. Em seguida, crie uma linha de trabalho a partir da versão inicial:
+Salve primeiro qualquer trabalho em andamento com um commit e mantenha uma cópia de segurança das pastas de mídia fora do projeto, pois esses arquivos não são protegidos pelos commits. Em seguida, crie uma linha de trabalho a partir da versão inicial:
 
 ```bash
 git switch -c recuperar-versao-inicial v0.1.0
@@ -47,6 +49,8 @@ Isso abre a versão inicial em uma nova branch. O histórico das alterações po
 git switch main
 npm ci
 ```
+
+A versão `v0.1.0` ainda tem o `.gitignore` original, anterior à exclusão das mídias. Antes de criar novos commits em uma branch baseada nela, copie as regras atuais de exclusão de mídias do `.gitignore` da branch `main`. Sem essas regras, `git add .` poderia adicionar os arquivos de mídia novamente.
 
 Para recuperar outra versão, use o identificador exibido por `git log` no lugar de `v0.1.0` e escolha um novo nome para a branch.
 
